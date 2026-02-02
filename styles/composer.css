@@ -1,26 +1,29 @@
-/* Composer section only */
-html.bbj-enabled #thread-bottom-container{
-  padding-right: var(--bbj-composer-reserve) !important;
+/* styles/composer.css
+   Composer section ONLY (the input area)
+   Independent from upper section.
+*/
+
+html:has(#bbj-rj-rail) #thread-bottom-container{
+  box-sizing: border-box !important;
+
+  /* Equal small left gutter */
+  padding-left: var(--bbj-gutter) !important;
+
+  /* Reserve rail on right + same gutter */
+  padding-right: calc(var(--bbj-composer-reserve) + var(--bbj-gutter)) !important;
+}
+
+/* IMPORTANT: On the welcome screen, ChatGPT often constrains the composer with inner max-width wrappers.
+   This removes those constraints WITHOUT changing heights/typography. */
+html:has(#bbj-rj-rail) #thread-bottom-container :is(form, [role="form"], .w-full, [class*="w-full"]){
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
   box-sizing: border-box !important;
 }
 
-/* Pill-only fix: shift the immediate wrapper that directly contains the input.
-   No width/max-width changes. */
-html.bbj-enabled #thread-bottom-container :is(div, form):has(> textarea, > [contenteditable="true"]){
-  position: relative !important;
-  transform: translateX(calc(-1 * var(--bbj-pill-shift))) !important;
-  will-change: transform;
-  overflow: visible !important;
-}
-
-/* Prevent clipping of rounded corners */
-html.bbj-enabled #thread-bottom-container,
-html.bbj-enabled #thread-bottom-container :is(form, [role="form"], .flex, .w-full, .stretch){
-  overflow: visible !important;
-}
-
-/* Input wrapping */
-html.bbj-enabled #thread-bottom-container :is(textarea,[contenteditable="true"]){
+/* Wrap fix (no horizontal scrollbar while typing) */
+html:has(#bbj-rj-rail) #thread-bottom-container :is(textarea,[contenteditable="true"]){
   white-space: pre-wrap !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;

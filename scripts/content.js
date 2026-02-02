@@ -1,22 +1,29 @@
+/* ChatGPT_Response_Jumper/scripts/content.js
+   - NO sizing in JS (no width/height/margins/padding/font-size in JS)
+   - Adds <html> gate class so your CSS applies immediately:
+       html.bbj-rj-3col ...
+   - Adds state classes so CSS can target both layouts:
+       html.bbj-rj-welcome  (new chat screen)
+       html.bbj-rj-thread   (once messages exist)
+   - Builds right Responses panel + click-to-jump
+   - Jump goes to start (with header offset)
+*/
+
 (() => {
   "use strict";
 
-  // -------------------------
-  // State classes for CSS
-  // -------------------------
-  const HTML_ON_CLASS = "bbj-rj-3col";
-  const HTML_COLLAPSED_CLASS = "bbj-rj-collapsed";
+  // ---- Gate + state classes ----
+  const HTML_GATE = "bbj-rj-3col";
+  const HTML_COMPAT = "bbj-enabled"; // if you still have older CSS gated on this
+  const HTML_COLLAPSED = "bbj-rj-collapsed";
+  const HTML_WELCOME = "bbj-rj-welcome";
+  const HTML_THREAD = "bbj-rj-thread";
 
-  // -------------------------
-  // LocalStorage keys
-  // -------------------------
+  // ---- LocalStorage ----
   const LS_COLLAPSED_KEY = "bbj_rj_collapsed";
   const LS_FILTER_KEY = "bbj_rj_filter";
-  const LS_DEBUG_KEY = "bbj_rj_debug"; // set to "1" to enable logs
 
-  // -------------------------
-  // IDs / classes
-  // -------------------------
+  // ---- IDs / classes ----
   const RAIL_ID = "bbj-rj-rail";
   const PANEL_ID = "bbj-rj-panel";
   const HEADER_ID = "bbj-rj-header";
@@ -30,39 +37,86 @@
   const MUTED_CLASS = "bbj-rj-muted";
   const FLASH_CLASS = "bbj-rj-flash";
 
-  const CODE_PENDING_CLASS = "bbj-code-pending";
-  const CODE_READY_CLASS = "bbj-code-ready";
-
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  const debugOn = () => localStorage.getItem(LS_DEBUG_KEY) === "1";
-  const log = (...args) => debugOn() && console.log("[BBJ]", ...args);
+  // -----------------------------
+  // 1) Keep <html> classes applied
+  // -----------------------------
+  function ensureHtmlGateClasses() {
+    const html = document.documentElement;
+    html.classList.add(HTML_GATE);
+    html.classList.add(HTML_COMPAT);
+    html.dataset.bbjRj = "on"; // proof in DevTools (not sizing)
 
-  // -------------------------
-  // Boot
-  // -------------------------
-  function ensureHtmlClass() {
-    document.documentElement.classList.add(HTML_ON_CLASS);
+    if (!ensureHtmlGateClasses._watching) {
+      ensureHtmlGateClasses._watching = true;
+
+      // If something alters <html class=...>, re-add our gate classes
+      new MutationObserver(() => {
+        if (!html.classList.contains(HTML_GATE)) html.classList.add(HTML_GATE);
+        if (!html.classList.contains(HTML_COMPAT)) html.classList.add(HTML_COMPAT);
+      }).observe(html, { attributes: true, attributeFilter: ["class"] });
+
+      // Cheap insurance
+      setInterval(() => {
+        if (!html.classList.contains(HTML_GATE)) html.classList.add(HTML_GATE);
+        if (!html.classList.contains(HTML_COMPAT)) html.classList.add(HTML_COMPAT);
+      }, 1500);
+    }
   }
 
-  // Ensure rail exists. We do NOT set width/position/etc here (CSS owns sizing),
-  // but we DO enforce clickability on the panel regardless of rail pointer-events.
+  // -----------------------------
+  // 2) Welcome vs Thread state
+  // -----------------------------
+  function hasConversationTurns() {
+    return !!$("[data-testid='conversation-turn']") || !!$("[data-message-author-role='assistant']");
+  }
+
+  function updateThreadState() {
+    const html = document.documentElement;
+    const hasTurns = hasConversationTurns();
+
+    html.classList.toggle(HTML_THREAD, hasTurns);
+    html.classList.toggle(HTML_WELCOME, !hasTurns);
+  }
+
+  // Apply immediately
+  ensureHtmlGateClasses();
+  updateThreadState();
+
+  // -----------------------------
+  // 3) Collapse state (CSS only)
+  // -----------------------------
+  function isCollapsed() {
+    const panel = document.getElementById(PANEL_ID);
+    return !!panel && panel.classList.contains("bbj-collapsed");
+  }
+
+  function setCollapsed(collapsed) {
+    const panel = ensurePanel();
+    panel.classList.toggle("bbj-collapsed", collapsed);
+    document.documentElement.classList.toggle(HTML_COLLAPSED, collapsed);
+    localStorage.setItem(LS_COLLAPSED_KEY, collapsed ? "1" : "0");
+  }
+
+  // -----------------------------
+  // 4) Build rail + panel DOM
+  // -----------------------------
   function ensureRail() {
     let rail = document.getElementById(RAIL_ID);
     if (rail) return rail;
 
     rail = document.createElement("div");
     rail.id = RAIL_ID;
-
-    // If your CSS sets rail pointer-events:none (common), that's fine.
-    // We append panel inside and force the panel to pointer-events:auto below.
     document.documentElement.appendChild(rail);
     return rail;
   }
 
   function ensurePanel() {
-    ensureHtmlClass();
+    ensureHtmlGateClasses();
+    updateThreadState();
+
     const rail = ensureRail();
 
     let panel = document.getElementById(PANEL_ID);
@@ -70,8 +124,6 @@
 
     panel = document.createElement("div");
     panel.id = PANEL_ID;
-
-    // Force clickability regardless of rail hit-testing
     panel.style.pointerEvents = "auto";
 
     const header = document.createElement("div");
@@ -105,21 +157,20 @@
 
     const list = document.createElement("div");
     list.id = LIST_ID;
-    list.style.pointerEvents = "auto"; // extra safety
+    list.style.pointerEvents = "auto";
 
     panel.appendChild(header);
     panel.appendChild(search);
     panel.appendChild(list);
     rail.appendChild(panel);
 
-    // Restore collapsed state
+    // restore collapsed
     setCollapsed(localStorage.getItem(LS_COLLAPSED_KEY) === "1");
 
-    // Wire buttons
+    // events
     btnLatest.addEventListener("click", () => jumpToLatest());
     btnToggle.addEventListener("click", () => setCollapsed(!isCollapsed()));
 
-    // Filter
     search.addEventListener(
       "input",
       () => {
@@ -129,52 +180,27 @@
       { passive: true }
     );
 
-    // ✅ Event delegation: one click handler for the whole list
+    // delegated list clicks
     list.addEventListener("click", (e) => {
       const item = e.target?.closest?.(`.${ITEM_CLASS}`);
       if (!item) return;
 
-      const idxStr = item.getAttribute("data-bbj-index");
-      const idx = idxStr ? parseInt(idxStr, 10) : NaN;
+      const idx = parseInt(item.getAttribute("data-bbj-index") || "", 10);
       if (!Number.isFinite(idx)) return;
 
       const targets = getAssistantTargets();
       const t = targets[idx];
       if (!t) return;
 
-      log("Clicked item -> jump", { idx, snippet: t.snippet });
       jumpToTurn(t.turn);
-    });
-
-    // Optional: Alt+J focuses filter
-    window.addEventListener("keydown", (e) => {
-      if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setCollapsed(false);
-        search.focus();
-        search.select();
-      }
     });
 
     return panel;
   }
 
-  function isCollapsed() {
-    const panel = document.getElementById(PANEL_ID);
-    return !!panel && panel.classList.contains("bbj-collapsed");
-  }
-
-  function setCollapsed(collapsed) {
-    const panel = ensurePanel();
-    panel.classList.toggle("bbj-collapsed", collapsed);
-    document.documentElement.classList.toggle(HTML_COLLAPSED_CLASS, collapsed);
-    localStorage.setItem(LS_COLLAPSED_KEY, collapsed ? "1" : "0");
-    log("Collapsed:", collapsed);
-  }
-
-  // -------------------------
-  // Turn discovery
-  // -------------------------
+  // -----------------------------
+  // 5) Find assistant turns/snippets
+  // -----------------------------
   function getConversationTurns() {
     const turns = $$('[data-testid="conversation-turn"]');
     if (turns.length) return turns;
@@ -193,6 +219,7 @@
       const roleEl = t.matches('[data-message-author-role]')
         ? t
         : t.querySelector('[data-message-author-role]');
+
       const role = roleEl?.getAttribute("data-message-author-role") || "";
       if (role !== "assistant") continue;
 
@@ -214,6 +241,9 @@
     return targets;
   }
 
+  // -----------------------------
+  // 6) Jump to START (offset)
+  // -----------------------------
   function flashTurn(turn) {
     if (!turn) return;
     turn.classList.remove(FLASH_CLASS);
@@ -221,46 +251,38 @@
     turn.classList.add(FLASH_CLASS);
     setTimeout(() => turn.classList.remove(FLASH_CLASS), 1200);
   }
-function getScrollParent(el) {
-  let p = el?.parentElement;
-  for (let i = 0; i < 20 && p; i++) {
-    const cs = getComputedStyle(p);
-    const oy = cs.overflowY;
-    // scroll container candidate
-    if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 10) {
-      return p;
+
+  function getScrollParent(el) {
+    let p = el?.parentElement;
+    for (let i = 0; i < 20 && p; i++) {
+      const cs = getComputedStyle(p);
+      const oy = cs.overflowY;
+      if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 10) {
+        return p;
+      }
+      p = p.parentElement;
     }
-    p = p.parentElement;
-  }
-  return null;
-}
-
-function jumpToTurn(turn) {
-  if (!turn) return;
-
-  // Try ChatGPT’s real scroller first; fallback to window
-  const scroller =
-    document.querySelector("main")?.closest("[class*='overflow-y']") || // common on some builds
-    getScrollParent(turn);
-
-  // Adjust this if you want more/less gap below the header
-  const HEADER_OFFSET = 90;
-
-  if (scroller) {
-    const turnRect = turn.getBoundingClientRect();
-    const scrollerRect = scroller.getBoundingClientRect();
-    const currentTop = scroller.scrollTop;
-
-    const targetTop = currentTop + (turnRect.top - scrollerRect.top) - HEADER_OFFSET;
-
-    scroller.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
-  } else {
-    const y = window.scrollY + turn.getBoundingClientRect().top - HEADER_OFFSET;
-    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    return null;
   }
 
-  flashTurn(turn);
-}
+  function jumpToTurn(turn) {
+    if (!turn) return;
+
+    const HEADER_OFFSET = 90;
+    const scroller = getScrollParent(turn);
+
+    if (scroller) {
+      const turnRect = turn.getBoundingClientRect();
+      const scrollerRect = scroller.getBoundingClientRect();
+      const targetTop = scroller.scrollTop + (turnRect.top - scrollerRect.top) - HEADER_OFFSET;
+      scroller.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+    } else {
+      const y = window.scrollY + turn.getBoundingClientRect().top - HEADER_OFFSET;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+
+    flashTurn(turn);
+  }
 
   function jumpToLatest() {
     const targets = getAssistantTargets();
@@ -268,20 +290,20 @@ function jumpToTurn(turn) {
     if (last) jumpToTurn(last.turn);
   }
 
-  // -------------------------
-  // List build
-  // -------------------------
+  // -----------------------------
+  // 7) Build list
+  // -----------------------------
   let lastListKey = "";
-
   function rebuildList(reason = "") {
     ensurePanel();
+    updateThreadState();
+
     const list = document.getElementById(LIST_ID);
     if (!list) return;
 
     const filter = (localStorage.getItem(LS_FILTER_KEY) || "").trim().toLowerCase();
     const targets = getAssistantTargets();
 
-    // Prevent pointless rebuild loops
     const key = targets.map((t) => t.snippet).join("\n");
     if (key === lastListKey && reason !== "manual" && reason !== "filter") return;
     lastListKey = key;
@@ -289,8 +311,7 @@ function jumpToTurn(turn) {
     list.innerHTML = "";
 
     const filtered = filter
-      ? targets
-          .map((t, idx) => ({ ...t, idx }))
+      ? targets.map((t, idx) => ({ ...t, idx }))
           .filter((x) => (String(x.idx + 1) + " " + x.snippet).toLowerCase().includes(filter))
       : targets.map((t, idx) => ({ ...t, idx }));
 
@@ -308,12 +329,8 @@ function jumpToTurn(turn) {
       item.setAttribute("data-bbj-index", String(itemData.idx));
       item.textContent = `${itemData.idx + 1}. ${itemData.snippet}`;
       item.title = "Click to jump";
-      item.style.pointerEvents = "auto"; // extra safety
-
       list.appendChild(item);
     }
-
-    log("List rebuilt", { reason, total: targets.length, shown: filtered.length });
   }
 
   let listTimer = 0;
@@ -322,56 +339,9 @@ function jumpToTurn(turn) {
     listTimer = window.setTimeout(() => rebuildList(reason), 250);
   }
 
-  // -------------------------
-  // Code pending/ready highlight
-  // -------------------------
-  function isGenerating() {
-    return !!(
-      $("[data-testid='stop-button']") ||
-      $("button[aria-label*='Stop']") ||
-      $("button[title*='Stop']") ||
-      $$("button").some((b) => (b.textContent || "").trim().toLowerCase() === "stop generating")
-    );
-  }
-
-  function newestAssistantTurn() {
-    const targets = getAssistantTargets();
-    return targets.length ? targets[targets.length - 1].turn : null;
-  }
-
-  let lastGenerating = false;
-
-  function updateCodeBlockStates() {
-    const generatingNow = isGenerating();
-    const newest = newestAssistantTurn();
-    if (!newest) {
-      lastGenerating = generatingNow;
-      return;
-    }
-
-    const pres = $$("pre", newest);
-
-    if (generatingNow) {
-      for (const pre of pres) {
-        pre.classList.add(CODE_PENDING_CLASS);
-        pre.classList.remove(CODE_READY_CLASS);
-      }
-    }
-
-    if (lastGenerating && !generatingNow) {
-      for (const pre of pres) {
-        pre.classList.remove(CODE_PENDING_CLASS);
-        pre.classList.add(CODE_READY_CLASS);
-        setTimeout(() => pre.classList.remove(CODE_READY_CLASS), 5500);
-      }
-    }
-
-    lastGenerating = generatingNow;
-  }
-
-  // -------------------------
-  // Observers + SPA nav
-  // -------------------------
+  // -----------------------------
+  // 8) Observe + URL changes
+  // -----------------------------
   function findConversationRoot() {
     const firstTurn = $("[data-testid='conversation-turn']");
     if (firstTurn) return firstTurn.parentElement || $("main") || document.body;
@@ -386,31 +356,13 @@ function jumpToTurn(turn) {
     const root = findConversationRoot();
     if (!root) return;
 
-    const mo = new MutationObserver((muts) => {
-      let relevant = false;
-
-      for (const m of muts) {
-        for (const n of m.addedNodes) {
-          if (!(n instanceof Element)) continue;
-          if (n.id && n.id.startsWith("bbj-")) continue;
-
-          if (
-            n.matches?.("[data-testid='conversation-turn']") ||
-            n.querySelector?.("[data-testid='conversation-turn']") ||
-            n.matches?.("[data-message-author-role]") ||
-            n.querySelector?.("[data-message-author-role]")
-          ) {
-            relevant = true;
-          }
-        }
-      }
-
-      if (relevant) scheduleListRebuild("mutation");
-      updateCodeBlockStates();
+    const mo = new MutationObserver(() => {
+      ensureHtmlGateClasses();
+      updateThreadState();
+      scheduleListRebuild("mutation");
     });
 
     mo.observe(root, { childList: true, subtree: true });
-    log("Observing conversation root:", root);
   }
 
   let lastHref = location.href;
@@ -419,14 +371,12 @@ function jumpToTurn(turn) {
       if (location.href !== lastHref) {
         lastHref = location.href;
         ensurePanel();
+        updateThreadState();
         scheduleListRebuild("url-change");
       }
     }, 600);
   }
 
-  // -------------------------
-  // Init
-  // -------------------------
   function init() {
     ensurePanel();
     rebuildList("init");
@@ -442,14 +392,11 @@ function jumpToTurn(turn) {
       { passive: true }
     );
 
-    setInterval(updateCodeBlockStates, 500);
-    setTimeout(() => scheduleListRebuild("settle"), 900);
+    // Keep state correct if welcome -> thread changes
+    setInterval(updateThreadState, 800);
 
-    log("Init complete. Debug:", debugOn() ? "ON" : "OFF");
-    if (debugOn()) {
-      log("Tip: run localStorage.setItem('bbj_rj_debug','1') to keep logs on.");
-    }
+    setTimeout(() => scheduleListRebuild("settle"), 900);
   }
 
-  setTimeout(init, 250);
+  setTimeout(init, 150);
 })();

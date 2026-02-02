@@ -4,13 +4,17 @@
   --bbj-rail-width: 340px;
   --bbj-safe-gap: 16px;
 
+    /* Your rail/panel vars */
+  --bbj-rj-rail-width: 360px;
+  --bbj-rj-rail-gap: 12px;
+
   /* Independent reserves (upper vs composer) */
-  --bbj-composer-reserve: 98%;
-  --bbj-upper-reserve: 98%;
+  --bbj-upper-reserve: calc(var(--bbj-rj-rail-width) + var(--bbj-rj-rail-gap));
+  --bbj-composer-reserve: calc(var(--bbj-rj-rail-width) + var(--bbj-rj-rail-gap));
 
   /* Composer pill shift (CSS-only, no shrink) */
-  --bbj-gutter: 12px; /* small equal space on both sides */
-  --bbj-pill-shift: 12px;
+  --bbj-gutter: 0; /* small equal space on both sides */
+  --bbj-pill-shift: 0;
 
   /* usable width excludes the rail */
   --bbj-usable: calc(100vw - var(--bbj-rj-rail-width) - var(--bbj-rj-rail-gap));
@@ -25,6 +29,6 @@
 
   /* ✅ ADD THESE */
   --bbj-chat-max: var(--bbj-rj-max-chat);
-  --bbj-gutter: 12px; /* equal margin on both sides of the chat column */
+  --bbj-gutter: 0; /* equal margin on both sides of the chat column */
   --bbj-usable: calc(100vw - var(--bbj-rj-rail-width) - var(--bbj-rj-rail-gap));
 }

@@ -1,5 +1,16 @@
-/* Upper section only (header + conversation) */
-html.bbj-enabled :is(header#page-header, main, [role="main"]){
-  padding-right: var(--bbj-upper-reserve) !important;
+/* styles/upper.css
+   Upper section ONLY (header + conversation/welcome area)
+   Gated on presence of the rail so it always applies when extension is active.
+*/
+
+html:has(#bbj-rj-rail) main,
+html:has(#bbj-rj-rail) [role="main"],
+html:has(#bbj-rj-rail) header#page-header{
   box-sizing: border-box !important;
+
+  /* Equal small left gutter */
+  padding-left: var(--bbj-gutter) !important;
+
+  /* Reserve rail on the right + keep same small gutter */
+  padding-right: calc(var(--bbj-upper-reserve) + var(--bbj-gutter)) !important;
 }
