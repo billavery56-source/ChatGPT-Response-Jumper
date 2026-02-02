@@ -14,7 +14,7 @@ selector
 /* Background 
 _____________________________________________________________________________________________________*/
 
-selector
+.data-\[fixed-header\=less-than-xl\]\:\@w-xl\/main\:bg-transparent[data-fixed-header=less-than-xl]
 {
   background: #060505 !important;
   background-color: #060505 !important;

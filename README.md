@@ -38,6 +38,22 @@ To apply changes:
 
 ---
 
+## Install from Release (recommended)
+
+1. Go to the repository’s **Releases** page and download the latest `ChatGPT_Response_Jumper.zip`.
+2. Unzip it to a folder (you should see `manifest.json` inside).
+3. Open `chrome://extensions`
+4. Enable **Developer mode** (top-right).
+5. Click **Load unpacked** and select the unzipped folder.
+6. Open ChatGPT and refresh the page.
+
+### Update to a newer release
+- Download the new zip and unzip it (new folder).
+- In `chrome://extensions`, click **Remove** on the old one (or point “Load unpacked” to the new folder).
+- Load the new folder and refresh ChatGPT.
+
+---
+
 ## Project structure
 
 ```txt
