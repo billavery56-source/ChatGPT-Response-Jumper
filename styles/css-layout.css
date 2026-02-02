@@ -1,0 +1,81 @@
+html.bbj-enabled,
+html.bbj-enabled body {
+  overflow-x: hidden !important;
+}
+
+/* ============================================================
+   IMPORTANT FIX:
+   Reserve space at the APP ROOT so nothing can render under rail.
+   chatgpt.com is Next.js (root is usually #__next).
+   ============================================================ */
+
+html.bbj-enabled body,
+html.bbj-enabled #__next {
+  box-sizing: border-box !important;
+  padding-right: calc(var(--bbj-rail-width) + var(--bbj-safe-gap)) !important;
+}
+
+/* Right rail (now transparent / divider only) */
+#bbj-rj-rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--bbj-rail-width);
+  height: 100vh;
+  z-index: 999998;
+  padding: var(--bbj-rail-gap);
+  padding-top: calc(var(--bbj-panel-top) - 8px);
+  box-sizing: border-box;
+
+  background: var(--bbj-rail-bg);
+  border-left: 1px solid var(--bbj-rail-border);
+
+  /* kill the dimming/blur slab effect */
+  backdrop-filter: none;
+
+  pointer-events: none;
+}
+
+/* Keep bottom composer area safe too (often positioned/sticky) */
+html.bbj-enabled #thread-bottom-container {
+  box-sizing: border-box !important;
+  padding-right: calc(var(--bbj-rail-width) + var(--bbj-safe-gap) + var(--bbj-chat-pad-right)) !important;
+  padding-left: var(--bbj-left-pad) !important;
+}
+
+/* Prevent flex overflow clipping (this helps “chopped” look a LOT) */
+html.bbj-enabled :is(main, [role="main"], #thread-bottom-container) * {
+  min-width: 0 !important;
+}
+
+/* Left-docked width for typical ChatGPT containers */
+html.bbj-enabled :is(main, [role="main"]) :is(.container, [class*="container"], [class*="prose"], [class*="max-w"], .mx-auto) {
+  max-width: none !important;
+  width: min(
+    var(--bbj-chat-max),
+    calc(100vw - var(--bbj-rail-width) - var(--bbj-safe-gap) - var(--bbj-left-pad) - var(--bbj-chat-pad-right))
+  ) !important;
+
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Small screens: let rail behave like overlay */
+@media (max-width: 1100px) {
+  html.bbj-enabled body,
+  html.bbj-enabled #__next {
+    padding-right: 0 !important;
+  }
+
+  html.bbj-enabled #thread-bottom-container {
+    padding-right: 12px !important;
+  }
+
+  #bbj-rj-rail {
+    width: auto;
+    border-left: 0;
+    background: transparent;
+    padding: 0;
+  }
+}

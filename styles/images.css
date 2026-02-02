@@ -1,0 +1,44 @@
+/* Image Settings */
+
+#bbj-rj-list div,
+li,
+p
+{
+    filter: brightness(75%) !important;
+    transition: filter 0.8s ease-in-out!important
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+#bbj-rj-list div:hover,
+li:hover,
+p:hover
+{
+    filter: brightness(100%) !important;  
+    transition: filter 0.8s ease-in-out!important
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+img
+{
+  border-radius: 22px !important;
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+img
+{
+  -webkit-box-reflect: below 0 -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(70%, transparent), to(rgba(250, 250, 250, 0.1)));
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+selector:hover
+{
+  opacity: 1 !important;
+}

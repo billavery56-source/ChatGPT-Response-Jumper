@@ -1,0 +1,40 @@
+/* Common styles (NO layout sizing rules here) */
+
+html.bbj-enabled :is(.markdown,.prose) code{
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
+
+/* Code blocks behave normally */
+html.bbj-enabled :is(pre, .markdown pre, .prose pre){
+  overflow: auto !important;
+  position: relative !important;
+}
+html.bbj-enabled :is(pre, .markdown pre, .prose pre) > code{
+  white-space: pre !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Code block states (JS toggles these classes) */
+html.bbj-enabled pre.bbj-code-pending{
+  box-shadow: inset 0 0 0 2px rgba(255, 200, 0, .75) !important;
+  background: rgba(255, 200, 0, .06) !important;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+html.bbj-enabled pre.bbj-code-ready{
+  box-shadow: inset 0 0 0 2px rgba(0, 208, 132, .90) !important;
+  background: rgba(0, 208, 132, .10) !important;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+html.bbj-enabled .bbj-flash{
+  animation: bbjFlash 1.2s ease;
+}
+@keyframes bbjFlash{
+  0%{ box-shadow: 0 0 0 0 rgba(0,208,132,0); }
+  15%{ box-shadow: 0 0 0 3px rgba(0,208,132,.45); }
+  100%{ box-shadow: 0 0 0 0 rgba(0,208,132,0); }
+}

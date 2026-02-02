@@ -1,0 +1,4 @@
+/* Put global background / text tweaks here if you want */
+html.bbj-enabled :is(main, [role="main"]) {
+  color: var(--bbj-text);
+}

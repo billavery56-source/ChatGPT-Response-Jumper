@@ -1,0 +1,266 @@
+/* ============================================================
+   Response Jump Panel + Right Rail (3-column layout)
+   Fixes:
+   - No content under the rail (no "chopped" sentences)
+   - Composer/input wraps normally (no horizontal scrollbar)
+   ============================================================ */
+
+:root {
+  --bbj-rj-rail-width: 360px;   /* width of right column */
+  --bbj-rj-rail-gap: 12px;      /* padding inside the rail */
+  --bbj-rj-rail-top: 92px;      /* panel sticky top offset */
+  --bbj-rj-panel-width: 320px;  /* panel itself */
+  --bbj-rj-max-chat: 1800px;    /* optional max width for chat column */
+}
+
+/* ---------- Right Rail (3rd column) ---------- */
+#bbj-rj-rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--bbj-rj-rail-width);
+  height: 100vh;
+  z-index: 999998;
+  padding: var(--bbj-rj-rail-gap);
+  padding-top: calc(var(--bbj-rj-rail-top) - 8px);
+  box-sizing: border-box;
+
+  /* keep the rail visually separate without "covering" content */
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(6px);
+
+  /* rail itself doesn't eat clicks except the panel */
+  pointer-events: none;
+}
+
+/* ============================================================
+   THE IMPORTANT PART:
+   Instead of margin tricks (which can lose to vw widths),
+   we reserve real space using padding-right + border-box.
+   That guarantees the chat never renders under the rail.
+   ============================================================ */
+html.bbj-rj-3col,
+html.bbj-rj-3col body {
+  overflow-x: hidden !important;
+}
+
+/* Give main content and bottom composer a "safe area" on the right */
+/* Reserve rail space, then center content with equal gutters */
+html.bbj-rj-3col :is(main, [role="main"], #thread-bottom-container){
+  box-sizing: border-box !important;
+
+  /* keep content out of the rail */
+  padding-right: calc(var(--bbj-rj-rail-width) + var(--bbj-rj-rail-gap)) !important;
+
+  /* equal small gutter on both sides */
+  padding-left: var(--bbj-gutter) !important;
+
+  /* center column inside usable space */
+  max-width: min(var(--bbj-chat-max), calc(var(--bbj-usable) - (2 * var(--bbj-gutter)))) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+
+/* ChatGPT uses lots of nested flex containers—this prevents clipping/overflow */
+html.bbj-rj-3col :is(main, [role="main"], #thread-bottom-container) * {
+  min-width: 0 !important;
+}
+
+/* If you have "wide" Stylus rules using vw, this clamps them back inside the safe area */
+html.bbj-rj-3col :is(main, [role="main"]) :is(
+  .container,
+  [class*="container"],
+  [class*="prose"],
+  [class*="max-w"],
+  [style*="--thread-content-max-width"]
+) {
+  width: 100% !important;
+  max-width: var(--bbj-rj-max-chat) !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Force normal wrapping so sentences never get visually chopped */
+html.bbj-rj-3col :is(main, [role="main"]) :is(.markdown, .prose, p, li, blockquote, h1, h2, h3, h4, h5, h6) {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+/* Code blocks should scroll horizontally inside themselves, not force page overflow */
+html.bbj-rj-3col pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* ---------- Panel base styles ---------- */
+#bbj-rj-panel {
+  width: var(--bbj-rj-panel-width);
+  max-height: calc(100vh - 130px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  background: rgba(20, 20, 20, 0.92);
+  backdrop-filter: blur(10px);
+  color: #eaeaea;
+  font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+  pointer-events: auto; /* clickable inside rail */
+}
+
+#bbj-rj-panel * { box-sizing: border-box; }
+
+#bbj-rj-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+#bbj-rj-title {
+  font-weight: 700;
+  letter-spacing: .2px;
+  flex: 1;
+  opacity: .95;
+}
+
+#bbj-rj-btn,
+#bbj-rj-toggle {
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: #eaeaea;
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+#bbj-rj-btn:hover,
+#bbj-rj-toggle:hover {
+  background: rgba(255,255,255,.12);
+}
+
+#bbj-rj-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  outline: none;
+  background: rgba(255,255,255,.05);
+  color: #eaeaea;
+}
+
+#bbj-rj-list {
+  padding: 6px;
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+}
+
+.bbj-rj-item {
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  opacity: .95;
+}
+
+.bbj-rj-item:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.10);
+}
+
+.bbj-rj-item:active {
+  transform: translateY(1px);
+}
+
+.bbj-rj-muted {
+  opacity: .65;
+  font-style: italic;
+  padding: 10px;
+}
+
+/* Highlight the target response briefly */
+@keyframes bbjFlash {
+  0%   { outline: 3px solid rgba(255, 205, 70, .0); }
+  20%  { outline: 3px solid rgba(255, 205, 70, .85); }
+  80%  { outline: 3px solid rgba(255, 205, 70, .65); }
+  100% { outline: 3px solid rgba(255, 205, 70, .0); }
+}
+
+.bbj-rj-flash {
+  border-radius: 12px;
+  animation: bbjFlash 1.2s ease-out 1;
+}
+
+/* ---------- Make panel behave as "rail content" ---------- */
+#bbj-rj-rail #bbj-rj-panel {
+  position: sticky;
+  top: 8px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------- Composer wrap fix (no horizontal scroll) ---------- */
+html.bbj-rj-3col #thread-bottom-container :is(textarea, [contenteditable="true"]) {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+}
+
+/* Sometimes the actual scrolling happens on a parent wrapper */
+html.bbj-rj-3col #thread-bottom-container :is(form, .flex, .w-full, [class*="flex"]) {
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Collapsed state: make rail skinny + panel compact */
+#bbj-rj-panel.bbj-collapsed {
+  width: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+#bbj-rj-panel.bbj-collapsed #bbj-rj-search,
+#bbj-rj-panel.bbj-collapsed #bbj-rj-list,
+#bbj-rj-panel.bbj-collapsed #bbj-rj-btn {
+  display: none;
+}
+
+html.bbj-rj-3col.bbj-rj-collapsed #bbj-rj-rail {
+  width: 70px;
+}
+
+html.bbj-rj-3col.bbj-rj-collapsed :is(main, [role="main"], #thread-bottom-container) {
+  padding-right: calc(70px + var(--bbj-rj-rail-gap) + 6px) !important;
+}
+
+/* ---------- Small screens: disable the rail (overlay behavior) ---------- */
+@media (max-width: 1100px) {
+  html.bbj-rj-3col :is(main, [role="main"], #thread-bottom-container) {
+    padding-right: 12px !important;
+  }
+
+  #bbj-rj-rail {
+    width: auto;
+    background: transparent;
+    backdrop-filter: none;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  #bbj-rj-panel {
+    position: fixed;
+    right: 14px;
+    top: 92px;
+    width: var(--bbj-rj-panel-width);
+    pointer-events: auto;
+  }
+}

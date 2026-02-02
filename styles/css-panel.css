@@ -1,0 +1,122 @@
+/* Right rail container (panel lives inside) */
+#bbj-rj-rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--bbj-rail-width);
+  height: 100vh;
+  z-index: 999998;
+  padding: var(--bbj-rail-gap);
+  padding-top: calc(var(--bbj-panel-top) - 8px);
+  box-sizing: border-box;
+  background: var(--bbj-rail-bg);
+  border-left: 1px solid var(--bbj-rail-border);
+  pointer-events: none; /* panel re-enables */
+}
+
+/* Panel */
+#bbj-rj-panel {
+  width: var(--bbj-panel-width);
+  max-height: calc(100vh - 130px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  background: var(--bbj-panel-bg);
+  color: var(--bbj-text);
+  font: var(--bbj-font);
+  pointer-events: auto;
+}
+
+#bbj-rj-panel * { box-sizing: border-box; }
+
+#bbj-rj-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 8px 10px;
+  border-bottom: 1px solid var(--bbj-rail-border);
+}
+
+#bbj-rj-title {
+  font-weight: 700;
+  letter-spacing: .2px;
+  flex: 1;
+  opacity: .95;
+}
+
+#bbj-rj-btn,
+#bbj-rj-toggle {
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--bbj-text);
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+#bbj-rj-btn:hover,
+#bbj-rj-toggle:hover {
+  background: rgba(255,255,255,.12);
+}
+
+#bbj-rj-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--bbj-rail-border);
+  outline: none;
+  background: rgba(255,255,255,.05);
+  color: var(--bbj-text);
+}
+
+#bbj-rj-list {
+  padding: 6px;
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+}
+
+.bbj-rj-item {
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  opacity: .95;
+}
+
+.bbj-rj-item:hover {
+  background: var(--bbj-hover);
+  border-color: rgba(255,255,255,.10);
+}
+
+.bbj-rj-item:active {
+  transform: translateY(1px);
+}
+
+.bbj-rj-muted {
+  opacity: .65;
+  font-style: italic;
+  padding: 10px;
+}
+
+/* Sticky panel in the rail */
+#bbj-rj-rail #bbj-rj-panel {
+  position: sticky;
+  top: 8px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Highlight the target response briefly */
+@keyframes bbjFlash {
+  0%   { outline: 3px solid rgba(255, 205, 70, .0); }
+  20%  { outline: 3px solid rgba(255, 205, 70, .85); }
+  80%  { outline: 3px solid rgba(255, 205, 70, .65); }
+  100% { outline: 3px solid rgba(255, 205, 70, .0); }
+}
+
+.bbj-rj-flash {
+  border-radius: 12px;
+  animation: bbjFlash 1.2s ease-out 1;
+}

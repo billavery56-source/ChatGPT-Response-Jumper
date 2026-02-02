@@ -1,0 +1,60 @@
+/* Enable with a single class so we can cleanly turn behavior on/off */
+html.bbj-enabled,
+html.bbj-enabled body {
+  overflow-x: hidden !important;
+}
+
+/* Reserve safe space on the RIGHT for rail, without changing centering */
+html.bbj-enabled :is(main, [role="main"], header#page-header, #thread-bottom-container) {
+  box-sizing: border-box !important;
+  padding-right: calc(var(--bbj-rail-width) + var(--bbj-rail-gap) + var(--bbj-safe-gap)) !important;
+}
+
+/* Flex shrink safety */
+html.bbj-enabled :is(main, [role="main"], #thread-bottom-container) * { min-width: 0 !important; }
+
+/* Wrap normal text */
+html.bbj-enabled :is(.markdown, .prose, p, li, blockquote, h1, h2, h3, h4, h5, h6) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+/* Inline code chips wrap (pre/code blocks handled separately) */
+html.bbj-enabled :is(.markdown, .prose) code {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
+
+/* Code blocks: keep horiz scroll inside block */
+html.bbj-enabled pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+html.bbj-enabled pre > code {
+  white-space: pre !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Code state colors */
+html.bbj-enabled pre.bbj-code-pending {
+  box-shadow: inset 0 0 0 2px rgba(255, 200, 0, .75) !important;
+  background: rgba(255, 200, 0, .06) !important;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+html.bbj-enabled pre.bbj-code-ready {
+  box-shadow: inset 0 0 0 2px rgba(0, 208, 132, .90) !important;
+  background: rgba(0, 208, 132, .10) !important;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+/* Composer input wrap */
+html.bbj-enabled #thread-bottom-container :is(textarea, [contenteditable="true"]) {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+}

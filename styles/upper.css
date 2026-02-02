@@ -1,0 +1,5 @@
+/* Upper section only (header + conversation) */
+html.bbj-enabled :is(header#page-header, main, [role="main"]){
+  padding-right: var(--bbj-upper-reserve) !important;
+  box-sizing: border-box !important;
+}

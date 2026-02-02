@@ -1,0 +1,17 @@
+# Normalize text files
+* text=auto
+
+# Keep these as text
+*.md text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary

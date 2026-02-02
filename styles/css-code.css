@@ -1,0 +1,23 @@
+html.bbj-enabled pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Sticky toolbar above code blocks */
+html.bbj-enabled div:has(> pre) {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+html.bbj-enabled div:has(> pre) > div:first-child {
+  position: sticky !important;
+  top: 8px !important;
+  z-index: 50 !important;
+  background: inherit !important;
+  padding-top: 4px !important;
+}
+
+html.bbj-enabled div:has(> pre) > div:first-child button {
+  position: relative !important;
+  z-index: 60 !important;
+}

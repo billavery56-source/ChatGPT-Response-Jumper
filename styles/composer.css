@@ -1,0 +1,28 @@
+/* Composer section only */
+html.bbj-enabled #thread-bottom-container{
+  padding-right: var(--bbj-composer-reserve) !important;
+  box-sizing: border-box !important;
+}
+
+/* Pill-only fix: shift the immediate wrapper that directly contains the input.
+   No width/max-width changes. */
+html.bbj-enabled #thread-bottom-container :is(div, form):has(> textarea, > [contenteditable="true"]){
+  position: relative !important;
+  transform: translateX(calc(-1 * var(--bbj-pill-shift))) !important;
+  will-change: transform;
+  overflow: visible !important;
+}
+
+/* Prevent clipping of rounded corners */
+html.bbj-enabled #thread-bottom-container,
+html.bbj-enabled #thread-bottom-container :is(form, [role="form"], .flex, .w-full, .stretch){
+  overflow: visible !important;
+}
+
+/* Input wrapping */
+html.bbj-enabled #thread-bottom-container :is(textarea,[contenteditable="true"]){
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  overflow-x: hidden !important;
+}

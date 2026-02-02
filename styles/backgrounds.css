@@ -1,0 +1,282 @@
+/* Background Settings */
+
+body,
+html
+{
+  background: #000 !important;
+}
+
+selector
+{
+  background-image: none !important;
+}
+
+/* Background 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: #060505 !important;
+  background-color: #060505 !important;
+}
+
+selector
+{
+  background-color: #101010 !important;
+}
+
+/* Background Transparent 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: #0000 !important;
+  background-color: #0000 !important;
+}
+
+/* Buttons 
+_____________________________________________________________________________________________________*/
+
+[class*=" btn-"]
+{
+  border-radius: 22px !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 5px #0006, #9b9b9b 0 1px 0, 10px 10px 5px #0a0a0a66, #9b9b9b 0 1px 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: 1 !important;
+}
+
+[class*=" btn-"]::before
+{
+  border-radius: 22px !important;
+  bottom: 0;
+  color: #ff0 !important;
+  content: "";
+  left: 0;
+  opacity: 0 !important;
+  position: absolute !important;
+  right: 0;
+  top: 0;
+  transition: opacity 0.8s linear !important;
+  z-index: -1 !important;
+}
+
+[class*=" btn-"]:hover::before
+{
+  opacity: 1 !important;
+}
+
+/* Blue */
+.btn-blue
+{
+  background: radial-gradient(circle, #1b8bc8a8 0%, #000 100%) !important;
+}
+.btn-blue::before
+ {
+  background: radial-gradient(circle, #000 0%, #1b8bc8 100%) !important;
+}
+
+/* Red */
+.btn-red
+{
+  background: radial-gradient(circle, #d90008a8 0%, #000 100%) !important;
+}
+.btn-red::before
+{
+  background: radial-gradient(circle, #000 0%, #d90008 100%) !important;
+}
+
+/* Orange */
+.btn-orange
+{
+  background: radial-gradient(circle, #ca3805a8 0%, #000 100%) !important;
+}
+.btn-orange::before
+{
+  background: radial-gradient(circle, #000 0%, #ca3805 100%) !important;
+}
+
+/* Light Blue */
+.btn-lightblue
+{
+  background: radial-gradient(circle, #058db7a8 0%, #000 100%) !important;
+}
+.btn-lightblue::before
+{
+  background: radial-gradient(circle, #000 0%, #058db7 100%) !important;
+}
+
+/* Green */
+.btn-green {
+  background: radial-gradient(circle, #05b717a8 0%, #000 100%) !important;
+}
+.btn-green::before 
+{
+  background: radial-gradient(circle, #000 0%, #05b717 100%) !important;
+}
+
+/* Gray */
+.btn-gray 
+{
+  background: radial-gradient(circle, #797979a8 0%, #000 100%) !important;
+}
+.btn-gray::before 
+{
+  background: radial-gradient(circle, #000 0%, #797979 100%) !important;
+}
+
+/* Base Background Style 
+_____________________________________________________________________________________________________*/
+
+#bbj-rj-list div
+{
+  border-radius: 22px !important;
+  border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  box-shadow: inset 0 0 5px #0006, #373737 0 1px 0, 10px 10px 5px #0006, #9b9b9b 0 1px 0 !important;
+  padding: 0.5rem !important;
+}
+
+/* Color Variants _____*/
+#bbj-rj-list div
+{
+  background-color: #000 !important;
+}
+
+.selector-dark
+{
+  background-color: #111 !important;
+}
+
+/* Hover Enhancement (shared) _____*/
+
+#bbj-rj-list div:hover
+{
+  box-shadow: inset 0 0 5px #0006, #9b9b9b 0 1px 0, 10px 10px 5px #0a0a0a66, #9b9b9b 0 1px 0 !important;
+}
+
+/* Red Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #590505 0%, #000 100%) !important;
+}
+
+selector
+{
+  background: linear-gradient(to top, #590505 0%, #000 80%) !important;
+}
+
+/* Blue Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #13193c, #000 100%) !important;
+}
+
+selector
+{
+  background: linear-gradient(to top, #03193c, #000 80%) !important;
+}
+
+/* Green Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #15534d 0%, #000 100%) !important;
+}
+
+/* Yellow Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #9d9d5d 0%, #000 100%) !important;
+}
+
+/* Orange Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #da3a04 0%, #000 100%) !important;
+}
+
+/* Gray Gradient 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: linear-gradient(to bottom, #242323 0%, #000 100%) !important;
+}
+
+selector
+{
+  background: linear-gradient(to top, #242323 0%, #000 80%) !important;
+}
+
+/* Gradient Border 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  border-bottom: 1px solid #000 !important;
+  border-radius: 22px !important;
+}
+
+/* Code 
+_____________________________________________________________________________________________________*/
+
+li code,
+p code,
+pre
+{
+  --red-900: #4f0a0a;
+  --red-800: #6c0f0f;
+
+  background:
+    radial-gradient(120% 160% at 50% 20%, rgba(255,255,255,.05), transparent 60%),
+    radial-gradient(90% 120% at 50% 100%, rgba(0,0,0,.45), transparent 55%),
+    linear-gradient(180deg, var(--red-800), var(--red-900));
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 20px 60px rgba(0,0,0,.35);
+  border-radius: 14px;
+  background-size: cover, cover, cover; /* harmless here */
+}
+
+
+/* Highlight Background 
+_____________________________________________________________________________________________________*/
+
+selector:hover
+{
+  background: linear-gradient(to right, #3b0202, #0000) !important;
+  border-left-color: #434343 !important;
+}
+
+/* Radial Background 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  background: radial-gradient(ellipse at center, #07ed07 0%, #000 70%) !important;
+  padding: 13px 26px !important;
+}
+
+selector
+{
+  background: radial-gradient(ellipse at center, #9a9d00 0%, #000 70%) !important;
+  padding: 13px 26px !important;
+}
+
+selector
+{
+  background: radial-gradient(ellipse at center, #00809d 0%, #000 70%) !important;
+  padding: 13px 26px !important;
+}

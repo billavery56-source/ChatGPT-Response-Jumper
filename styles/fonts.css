@@ -1,0 +1,142 @@
+/* Font Settings */
+
+a[href]
+{
+  color: #0ff !important;
+  text-shadow: 1px 1px #000 !important;
+}
+
+a[href]:visited
+{
+  color: #fc79fc !important;
+  text-shadow: 1px 1px #000 !important;
+}
+
+/* Yellow 
+_____________________________________________________________________________________________________*/
+
+a[href]:hover,
+h1,
+
+input[type="checkbox"]:checked + label,
+input[type="radio"]:checked + label
+{
+  color: #ff0 !important;
+  transition: color 1.3s ease-in-out !important;
+}
+
+/* White 
+_____________________________________________________________________________________________________*/
+
+body,
+li,
+p
+{
+  color: #fff !important;
+}
+
+/* Khaki 
+_____________________________________________________________________________________________________*/
+
+em,
+
+h1,
+h2
+{
+  color: #f0e890 !important;
+}
+
+/* Burlywood 
+_____________________________________________________________________________________________________*/
+
+em,
+h3,
+h4,
+
+strong
+{
+  color: #e0b880 !important;
+}
+
+/* Sandy Brown 
+_____________________________________________________________________________________________________*/
+
+h5,
+h6,
+
+label
+{
+  color: #f0a060 !important;
+}
+
+/* Blue 
+_____________________________________________________________________________________________________*/
+
+time
+{
+  color: #07beff !important;
+}
+
+/* Green 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  color: #07ff24 !important;
+}
+
+/* Red 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  color: #ff0707 !important;
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+input,
+
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+
+select,
+textarea
+{
+  background-color: #5d1b1b !important;
+  color: #fff !important;
+}
+
+/*
+_____________________________________________________________________________________________________*/
+
+::selection
+{
+  background: #ff9 !important;
+  color: #000 !important;
+}
+
+pre ::selection
+{
+  background: #ff9 !important;
+  color: #fff !important;
+}
+
+::placeholder
+{
+  color: #f48f8f !important;
+  opacity: 1;
+}
+
+/* Misc 
+_____________________________________________________________________________________________________*/
+
+selector
+{
+  color: #fff !important;
+}
