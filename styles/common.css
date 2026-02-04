@@ -1,40 +1,28 @@
-/* Common styles (NO layout sizing rules here) */
+/* Wrap aggressively ONLY inside message text, not UI cards */
 
-html.bbj-enabled :is(.markdown,.prose) code{
-  white-space: pre-wrap !important;
+html:has(#bbj-rj-rail) :is(
+  [data-message-author-role="assistant"],
+  [data-message-author-role="user"]
+) :is(.markdown,.prose,p,li,blockquote,h1,h2,h3,h4,h5,h6){
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
-  max-width: 100% !important;
 }
 
-/* Code blocks behave normally */
-html.bbj-enabled :is(pre, .markdown pre, .prose pre){
-  overflow: auto !important;
-  position: relative !important;
-}
-html.bbj-enabled :is(pre, .markdown pre, .prose pre) > code{
-  white-space: pre !important;
+/* Undo wrap weirdness on UI elements */
+html:has(#bbj-rj-rail) :is(button,input,select,textarea,[role="button"]){
   overflow-wrap: normal !important;
   word-break: normal !important;
 }
 
-/* Code block states (JS toggles these classes) */
-html.bbj-enabled pre.bbj-code-pending{
-  box-shadow: inset 0 0 0 2px rgba(255, 200, 0, .75) !important;
-  background: rgba(255, 200, 0, .06) !important;
-  transition: background .25s ease, box-shadow .25s ease;
-}
-html.bbj-enabled pre.bbj-code-ready{
-  box-shadow: inset 0 0 0 2px rgba(0, 208, 132, .90) !important;
-  background: rgba(0, 208, 132, .10) !important;
-  transition: background .25s ease, box-shadow .25s ease;
+/* Flash highlight on the target response in the thread */
+@keyframes bbjFlashTurn {
+  0%   { outline: 3px solid rgba(0,208,132, 0); box-shadow: 0 0 0 0 rgba(0,208,132,0); }
+  20%  { outline: 3px solid rgba(0,208,132, .95); box-shadow: 0 0 0 6px rgba(0,208,132,.18); }
+  80%  { outline: 3px solid rgba(0,208,132, .55); box-shadow: 0 0 0 2px rgba(0,208,132,.10); }
+  100% { outline: 3px solid rgba(0,208,132, 0); box-shadow: 0 0 0 0 rgba(0,208,132,0); }
 }
 
-html.bbj-enabled .bbj-flash{
-  animation: bbjFlash 1.2s ease;
-}
-@keyframes bbjFlash{
-  0%{ box-shadow: 0 0 0 0 rgba(0,208,132,0); }
-  15%{ box-shadow: 0 0 0 3px rgba(0,208,132,.45); }
-  100%{ box-shadow: 0 0 0 0 rgba(0,208,132,0); }
+.bbj-rj-flash{
+  border-radius: 12px;
+  animation: bbjFlashTurn 1.2s ease-out 1;
 }

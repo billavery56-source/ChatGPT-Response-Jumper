@@ -1,79 +1,98 @@
 #bbj-rj-rail{
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  width: var(--bbj-rail-width) !important;
-  height: 100vh !important;
-  z-index: 999998 !important;
-  box-sizing: border-box !important;
-  background: rgba(0,0,0,0.10) !important;
-  border-left: 1px solid rgba(255,255,255,.12) !important;
-  pointer-events: none !important;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--bbj-rj-rail-width);
+  height: 100vh;
+  z-index: 999998;
+  padding: var(--bbj-rj-rail-gap);
+  padding-top: calc(var(--bbj-rj-rail-top) - 8px);
+  box-sizing: border-box;
+  background: rgba(0,0,0,.18);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
 }
 
 #bbj-rj-panel{
-  pointer-events: auto !important;
-  margin: 10px !important;
-  width: min(var(--bbj-panel-width), calc(100vw - 16px)) !important;
-  border-radius: 14px !important;
-  background: rgba(20,20,20,.88) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,.45) !important;
-  overflow: hidden !important;
-  color: #eaeaea !important;
-  font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial !important;
+  width: var(--bbj-rj-panel-width);
+  max-height: calc(100vh - 130px);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  background: rgba(20,20,20,.92);
+  backdrop-filter: blur(10px);
+  color: #eaeaea;
+  font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  pointer-events: auto;
 }
 
-#bbj-rj-panel .bbj-header{
+#bbj-rj-rail #bbj-rj-panel{
+  position: sticky;
+  top: 8px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#bbj-rj-header{
   display:flex;
   align-items:center;
   gap:8px;
-  padding: 10px 10px 8px 10px;
-  background: rgba(0,0,0,.35);
-  border-bottom: 1px solid rgba(255,255,255,.10);
-  font-weight: 800;
-}
-#bbj-rj-panel .bbj-title{ flex:1; }
-
-#bbj-rj-panel .bbj-btn{
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
-  color: #eaeaea;
-  padding: 4px 8px;
-  border-radius: 10px;
-  cursor: pointer;
+  padding:10px 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
 }
 
-#bbj-rj-panel .bbj-search{
-  width: calc(100% - 20px);
-  margin: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.35);
-  color: #eaeaea;
-  outline: none;
-}
+#bbj-rj-title{ flex:1; font-weight:700; }
 
-#bbj-rj-panel .bbj-list{
-  max-height: calc(100vh - 160px);
-  overflow: auto;
-  padding: 0 10px 10px 10px;
-}
-
-#bbj-rj-panel .bbj-item{
-  padding: 8px 8px;
-  margin: 6px 0;
-  border-radius: 10px;
+#bbj-rj-btn,#bbj-rj-toggle{
+  border:1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  cursor: pointer;
+  color:#eaeaea;
+  padding:6px 9px;
+  border-radius:10px;
+  cursor:pointer;
 }
 
-#bbj-rj-panel .bbj-muted{
-  opacity:.75;
-  padding: 6px 2px;
+#bbj-rj-search{
+  width:100%;
+  padding:9px 10px;
+  border:0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
+  color:#eaeaea;
+  outline:none;
 }
 
-#bbj-rj-panel.bbj-collapsed .bbj-search,
-#bbj-rj-panel.bbj-collapsed .bbj-list{ display:none; }
+#bbj-rj-list{
+  padding:10px;
+  overflow:auto;
+  max-height: calc(100vh - 230px);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.bbj-rj-item{
+  padding:10px 12px;
+  border-radius:12px;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;
+  user-select:none;
+}
+
+.bbj-rj-muted{ opacity:.65; padding:10px; font-style:italic; }
+
+@keyframes bbjFlash{
+  0%{ outline:3px solid rgba(255,205,70,0); }
+  20%{ outline:3px solid rgba(255,205,70,.85); }
+  80%{ outline:3px solid rgba(255,205,70,.65); }
+  100%{ outline:3px solid rgba(255,205,70,0); }
+}
+.bbj-rj-flash{ border-radius:12px; animation: bbjFlash 1.2s ease-out 1; }
+
+#bbj-rj-panel.bbj-collapsed #bbj-rj-search,
+#bbj-rj-panel.bbj-collapsed #bbj-rj-list,
+#bbj-rj-panel.bbj-collapsed #bbj-rj-btn{ display:none; }
+
+html.bbj-rj-collapsed #bbj-rj-rail{ width:70px; }

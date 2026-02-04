@@ -1,0 +1,32 @@
+/* styles/panel-overrides.css
+   Loaded LAST. Only panel rules. No center-column sizing.
+*/
+
+#bbj-rj-list{
+  padding: 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.bbj-rj-item{
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.bbj-rj-item:hover{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
+
+/* ACTIVE */
+.bbj-rj-item.bbj-rj-active{
+  background: rgba(0,208,132,.18) !important;
+  border-color: rgba(0,208,132,.70) !important;
+  box-shadow: inset 0 0 0 2px rgba(0,208,132,.35) !important;
+  color: rgba(255,255,255,.98) !important;
+}

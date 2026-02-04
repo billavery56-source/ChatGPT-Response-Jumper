@@ -1,35 +1,41 @@
-/* styles/visibility-fix.css
-   Purpose: prevent “blank responses” where only 'Thought for …' shows.
-
-   This does NOT change widths/margins/padding. Only visibility/color/opacity.
-   Load this LAST in manifest.json so it wins.
+/* styles/visibility.css
+   Purpose:
+   - Prevent “text disappears” where only 'Thought for...' remains visible.
+   - Only affects actual chat message content, not UI cards.
 */
 
-html.bbj-rj-3col :is(.markdown, .prose){
+html:has(#bbj-rj-rail) :is([data-message-author-role="assistant"], [data-message-author-role="user"]) {
+  /* Ensure message containers themselves are not hidden */
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force message bodies visible (this is what was disappearing) */
+html:has(#bbj-rj-rail)
+:is([data-message-author-role="assistant"], [data-message-author-role="user"])
+:is(.markdown, .prose) {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 
-  /* kill any weird blending that can make text disappear */
-  mix-blend-mode: normal !important;
-  filter: none !important;
-  text-shadow: none !important;
-}
-
-/* If any file set text color to transparent, this fixes it */
-html.bbj-rj-3col :is(.markdown, .prose){
+  /* Prevent “invisible text” tricks */
   color: inherit !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
 }
 
-/* But if inherit is also “bad” (e.g. parent was set wrong),
-   use a safe fallback per theme. */
-@media (prefers-color-scheme: dark){
-  html.bbj-rj-3col :is(.markdown, .prose){
+/* If a parent accidentally set color transparent, give a safe fallback */
+@media (prefers-color-scheme: dark) {
+  html:has(#bbj-rj-rail)
+  :is([data-message-author-role="assistant"], [data-message-author-role="user"])
+  :is(.markdown, .prose) {
     color: rgb(235,235,235) !important;
   }
 }
-@media (prefers-color-scheme: light){
-  html.bbj-rj-3col :is(.markdown, .prose){
+@media (prefers-color-scheme: light) {
+  html:has(#bbj-rj-rail)
+  :is([data-message-author-role="assistant"], [data-message-author-role="user"])
+  :is(.markdown, .prose) {
     color: rgb(20,20,20) !important;
   }
 }

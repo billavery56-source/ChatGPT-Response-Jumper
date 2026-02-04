@@ -1,0 +1,8 @@
+:root{
+  --bbj-rj-rail-width: 360px;
+  --bbj-rj-rail-gap: 12px;
+  --bbj-rj-rail-top: 92px;
+  --bbj-rj-panel-width: 320px;
+
+  --bbj-gutter: 16px; /* equal small margin */
+}

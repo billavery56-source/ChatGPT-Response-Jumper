@@ -1,16 +1,16 @@
-/* styles/upper.css
-   Upper section ONLY (header + conversation/welcome area)
-   Gated on presence of the rail so it always applies when extension is active.
-*/
+/* Upper only: reserve rail + add equal gutters.
+   Also set thread max width to avoid “vertical word soup” cards. */
 
-html:has(#bbj-rj-rail) main,
-html:has(#bbj-rj-rail) [role="main"],
-html:has(#bbj-rj-rail) header#page-header{
+html:has(#bbj-rj-rail) :is(header#page-header, main, [role="main"]){
   box-sizing: border-box !important;
-
-  /* Equal small left gutter */
   padding-left: var(--bbj-gutter) !important;
+  padding-right: calc(var(--bbj-rj-rail-width) + var(--bbj-rj-rail-gap) + var(--bbj-gutter)) !important;
+}
 
-  /* Reserve rail on the right + keep same small gutter */
-  padding-right: calc(var(--bbj-upper-reserve) + var(--bbj-gutter)) !important;
+html:has(#bbj-rj-rail) main{
+  --thread-content-max-width: 80rem !important;
+}
+
+html:has(#bbj-rj-rail) main [style*="--thread-content-max-width"]{
+  --thread-content-max-width: 80rem !important;
 }

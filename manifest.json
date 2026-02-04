@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT Response Jumper",
-  "version": "1.3.0",
-  "description": "Right-rail Response Jump list for ChatGPT + small quality-of-life fixes.",
+  "version": "1.3.1",
+  "description": "Right-side Responses panel for ChatGPT with CSS-driven layout split between upper thread and composer.",
   "permissions": [],
   "host_permissions": [
     "https://chatgpt.com/*",
@@ -28,21 +28,27 @@
         "https://chatgpt.com/*",
         "https://chat.openai.com/*"
       ],
-      "js": ["scripts/content.js"],
-      "css": [
-        "styles/backgrounds.css",
-        "styles/common.css",
-        "styles/composer.css",
-        "styles/css-vars.css",
-        "styles/fonts.css",
-        "styles/images.css",
-        "styles/panel.css",
-        "styles/styles.css",
-        "styles/upper.css",
-        "styles/visibility.css"
+      "js": [
+        "scripts/content.js"
       ],
-      "run_at": "document_start"
+      "css": [
+  "styles/vars.css",
+  "styles/backgrounds.css",
+  "styles/fonts.css",
+  "styles/images.css",
 
+  "styles/common.css",
+  "styles/upper.css",
+  "styles/composer.css",
+
+  "styles/panel.css",
+  "styles/styles.css",
+  "styles/visibility.css",
+
+  "styles/panel-overrides.css"
+]
+,
+      "run_at": "document_start"
     }
   ]
 }

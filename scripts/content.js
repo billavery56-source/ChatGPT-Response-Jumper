@@ -1,29 +1,19 @@
-/* ChatGPT_Response_Jumper/scripts/content.js
-   - NO sizing in JS (no width/height/margins/padding/font-size in JS)
-   - Adds <html> gate class so your CSS applies immediately:
-       html.bbj-rj-3col ...
-   - Adds state classes so CSS can target both layouts:
-       html.bbj-rj-welcome  (new chat screen)
-       html.bbj-rj-thread   (once messages exist)
-   - Builds right Responses panel + click-to-jump
-   - Jump goes to start (with header offset)
+/* scripts/content.js
+   Fixes:
+   - Responses only working once: uses stable data-message-id, not array indices
+   - Active highlight: based on stable message id
+   - No sizing in JS
 */
 
 (() => {
   "use strict";
 
-  // ---- Gate + state classes ----
-  const HTML_GATE = "bbj-rj-3col";
-  const HTML_COMPAT = "bbj-enabled"; // if you still have older CSS gated on this
-  const HTML_COLLAPSED = "bbj-rj-collapsed";
-  const HTML_WELCOME = "bbj-rj-welcome";
-  const HTML_THREAD = "bbj-rj-thread";
-
-  // ---- LocalStorage ----
-  const LS_COLLAPSED_KEY = "bbj_rj_collapsed";
+  // LocalStorage keys
   const LS_FILTER_KEY = "bbj_rj_filter";
+  const LS_COLLAPSED_KEY = "bbj_rj_collapsed";
+  const LS_ACTIVE_MESSAGE_ID_KEY = "bbj_rj_active_message_id";
 
-  // ---- IDs / classes ----
+  // IDs
   const RAIL_ID = "bbj-rj-rail";
   const PANEL_ID = "bbj-rj-panel";
   const HEADER_ID = "bbj-rj-header";
@@ -33,80 +23,21 @@
   const SEARCH_ID = "bbj-rj-search";
   const LIST_ID = "bbj-rj-list";
 
+  // Classes
   const ITEM_CLASS = "bbj-rj-item";
   const MUTED_CLASS = "bbj-rj-muted";
+  const ACTIVE_CLASS = "bbj-rj-active";
   const FLASH_CLASS = "bbj-rj-flash";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  // -----------------------------
-  // 1) Keep <html> classes applied
-  // -----------------------------
-  function ensureHtmlGateClasses() {
-    const html = document.documentElement;
-    html.classList.add(HTML_GATE);
-    html.classList.add(HTML_COMPAT);
-    html.dataset.bbjRj = "on"; // proof in DevTools (not sizing)
-
-    if (!ensureHtmlGateClasses._watching) {
-      ensureHtmlGateClasses._watching = true;
-
-      // If something alters <html class=...>, re-add our gate classes
-      new MutationObserver(() => {
-        if (!html.classList.contains(HTML_GATE)) html.classList.add(HTML_GATE);
-        if (!html.classList.contains(HTML_COMPAT)) html.classList.add(HTML_COMPAT);
-      }).observe(html, { attributes: true, attributeFilter: ["class"] });
-
-      // Cheap insurance
-      setInterval(() => {
-        if (!html.classList.contains(HTML_GATE)) html.classList.add(HTML_GATE);
-        if (!html.classList.contains(HTML_COMPAT)) html.classList.add(HTML_COMPAT);
-      }, 1500);
-    }
-  }
-
-  // -----------------------------
-  // 2) Welcome vs Thread state
-  // -----------------------------
-  function hasConversationTurns() {
-    return !!$("[data-testid='conversation-turn']") || !!$("[data-message-author-role='assistant']");
-  }
-
-  function updateThreadState() {
-    const html = document.documentElement;
-    const hasTurns = hasConversationTurns();
-
-    html.classList.toggle(HTML_THREAD, hasTurns);
-    html.classList.toggle(HTML_WELCOME, !hasTurns);
-  }
-
-  // Apply immediately
-  ensureHtmlGateClasses();
-  updateThreadState();
-
-  // -----------------------------
-  // 3) Collapse state (CSS only)
-  // -----------------------------
-  function isCollapsed() {
-    const panel = document.getElementById(PANEL_ID);
-    return !!panel && panel.classList.contains("bbj-collapsed");
-  }
-
-  function setCollapsed(collapsed) {
-    const panel = ensurePanel();
-    panel.classList.toggle("bbj-collapsed", collapsed);
-    document.documentElement.classList.toggle(HTML_COLLAPSED, collapsed);
-    localStorage.setItem(LS_COLLAPSED_KEY, collapsed ? "1" : "0");
-  }
-
-  // -----------------------------
-  // 4) Build rail + panel DOM
-  // -----------------------------
+  // --------------------------
+  // Panel DOM
+  // --------------------------
   function ensureRail() {
     let rail = document.getElementById(RAIL_ID);
     if (rail) return rail;
-
     rail = document.createElement("div");
     rail.id = RAIL_ID;
     document.documentElement.appendChild(rail);
@@ -114,9 +45,6 @@
   }
 
   function ensurePanel() {
-    ensureHtmlGateClasses();
-    updateThreadState();
-
     const rail = ensureRail();
 
     let panel = document.getElementById(PANEL_ID);
@@ -164,139 +92,246 @@
     panel.appendChild(list);
     rail.appendChild(panel);
 
-    // restore collapsed
     setCollapsed(localStorage.getItem(LS_COLLAPSED_KEY) === "1");
 
-    // events
-    btnLatest.addEventListener("click", () => jumpToLatest());
-    btnToggle.addEventListener("click", () => setCollapsed(!isCollapsed()));
+    btnLatest.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      jumpToLatest();
+    });
 
-    search.addEventListener(
-      "input",
-      () => {
-        localStorage.setItem(LS_FILTER_KEY, search.value);
-        rebuildList("filter");
-      },
-      { passive: true }
-    );
+    btnToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCollapsed(!isCollapsed());
+    });
 
-    // delegated list clicks
+    search.addEventListener("input", () => {
+      localStorage.setItem(LS_FILTER_KEY, search.value);
+      rebuildList("filter");
+    }, { passive: true });
+
+    // Delegated click: use stable message-id
     list.addEventListener("click", (e) => {
       const item = e.target?.closest?.(`.${ITEM_CLASS}`);
       if (!item) return;
 
-      const idx = parseInt(item.getAttribute("data-bbj-index") || "", 10);
-      if (!Number.isFinite(idx)) return;
+      e.preventDefault();
+      e.stopPropagation();
 
-      const targets = getAssistantTargets();
-      const t = targets[idx];
-      if (!t) return;
+      const mid = item.getAttribute("data-bbj-mid");
+      if (!mid) return;
 
-      jumpToTurn(t.turn);
+      setActiveMessageId(mid);
+      applyActiveHighlight();
+
+      const found = findMessageElementById(mid);
+if (!found) return;
+jumpToAnchor(found.anchor);
+
     });
 
+    applyActiveHighlight();
     return panel;
   }
 
-  // -----------------------------
-  // 5) Find assistant turns/snippets
-  // -----------------------------
-  function getConversationTurns() {
-    const turns = $$('[data-testid="conversation-turn"]');
-    if (turns.length) return turns;
-
-    const roleBlocks = $$('[data-message-author-role]');
-    if (roleBlocks.length) return roleBlocks;
-
-    return [];
+  function isCollapsed() {
+    const panel = document.getElementById(PANEL_ID);
+    return !!panel && panel.classList.contains("bbj-collapsed");
   }
 
+  function setCollapsed(collapsed) {
+    const panel = document.getElementById(PANEL_ID) || ensurePanel();
+    panel.classList.toggle("bbj-collapsed", collapsed);
+    document.documentElement.classList.toggle("bbj-rj-collapsed", collapsed);
+    localStorage.setItem(LS_COLLAPSED_KEY, collapsed ? "1" : "0");
+  }
+
+  // --------------------------
+  // Active highlight (message-id based)
+  // --------------------------
+  function getActiveMessageId() {
+    return localStorage.getItem(LS_ACTIVE_MESSAGE_ID_KEY) || null;
+  }
+  function setActiveMessageId(mid) {
+    localStorage.setItem(LS_ACTIVE_MESSAGE_ID_KEY, mid);
+  }
+
+  function applyActiveHighlight() {
+    const list = document.getElementById(LIST_ID);
+    if (!list) return;
+
+    list.querySelectorAll(`.${ITEM_CLASS}.${ACTIVE_CLASS}`)
+      .forEach(el => el.classList.remove(ACTIVE_CLASS));
+
+    const mid = getActiveMessageId();
+    if (!mid) return;
+
+    const el = list.querySelector(`.${ITEM_CLASS}[data-bbj-mid="${mid}"]`);
+    if (el) el.classList.add(ACTIVE_CLASS);
+  }
+
+  // --------------------------
+  // Build targets using stable data-message-id
+  // --------------------------
   function getAssistantTargets() {
-    const turns = getConversationTurns();
+    // Prefer role blocks (they reliably carry data-message-id)
+    const roleBlocks = $$('[data-message-author-role="assistant"][data-message-id]');
     const targets = [];
 
-    for (const t of turns) {
-      const roleEl = t.matches('[data-message-author-role]')
-        ? t
-        : t.querySelector('[data-message-author-role]');
+    for (const roleEl of roleBlocks) {
+      const mid = roleEl.getAttribute("data-message-id");
+      if (!mid) continue;
 
-      const role = roleEl?.getAttribute("data-message-author-role") || "";
-      if (role !== "assistant") continue;
-
+      // Use nearest conversation turn as the scroll target
       const turn =
-        t.matches('[data-testid="conversation-turn"]')
-          ? t
-          : t.closest('[data-testid="conversation-turn"]') || t;
+        roleEl.closest('[data-testid="conversation-turn"]') ||
+        roleEl.closest("article") ||
+        roleEl;
 
-      const textRoot =
-        turn.querySelector(".markdown, .prose, [data-message-author-role='assistant']") || turn;
-
+      const textRoot = turn.querySelector(".markdown, .prose") || roleEl;
       let snippet = (textRoot.textContent || "").replace(/\s+/g, " ").trim();
       if (!snippet) snippet = "(empty)";
       if (snippet.length > 90) snippet = snippet.slice(0, 90) + "…";
 
-      targets.push({ turn, snippet });
+      targets.push({ mid, turn, snippet });
     }
 
     return targets;
   }
 
-  // -----------------------------
-  // 6) Jump to START (offset)
-  // -----------------------------
-  function flashTurn(turn) {
-    if (!turn) return;
-    turn.classList.remove(FLASH_CLASS);
-    void turn.offsetWidth;
-    turn.classList.add(FLASH_CLASS);
-    setTimeout(() => turn.classList.remove(FLASH_CLASS), 1200);
+  function findMessageElementById(mid) {
+  const roleEl = document.querySelector(
+    `[data-message-author-role="assistant"][data-message-id="${mid}"]`
+  );
+  if (!roleEl) return null;
+
+  const turn =
+    roleEl.closest('[data-testid="conversation-turn"]') ||
+    roleEl.closest("article") ||
+    roleEl;
+
+  // Prefer the actual rendered content block (top of the answer)
+  const content =
+    turn.querySelector(".markdown") ||
+    turn.querySelector(".prose") ||
+    roleEl;
+
+  return { turn, anchor: content };
+}
+
+function getScrollParent(el) {
+  let p = el?.parentElement;
+  for (let i = 0; i < 25 && p; i++) {
+    const cs = getComputedStyle(p);
+    const oy = cs.overflowY;
+    if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 10) return p;
+    p = p.parentElement;
+  }
+  return document.scrollingElement || null;
+}
+
+function jumpToAnchor(anchorEl) {
+  if (!anchorEl) return;
+
+  const HEADER_OFFSET = 90; // tweak if needed
+  const scroller = getScrollParent(anchorEl);
+
+  // Compute "top of anchor" relative to scroll container
+  const aRect = anchorEl.getBoundingClientRect();
+
+  if (scroller && scroller !== document.scrollingElement) {
+    const sRect = scroller.getBoundingClientRect();
+    const top = scroller.scrollTop + (aRect.top - sRect.top) - HEADER_OFFSET;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  } else {
+    const top = window.scrollY + aRect.top - HEADER_OFFSET;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }
+
+  // flash the TURN so you can see what it jumped to
+  const turn = anchorEl.closest('[data-testid="conversation-turn"]') || anchorEl;
+  turn.classList.remove("bbj-rj-flash");
+  void turn.offsetWidth;
+  turn.classList.add("bbj-rj-flash");
+  setTimeout(() => turn.classList.remove("bbj-rj-flash"), 1200);
+}
+
+
+  // --------------------------
+  // Jump behavior (start + offset)
+  // --------------------------
+  function flashEl(el) {
+    if (!el) return;
+    el.classList.remove(FLASH_CLASS);
+    void el.offsetWidth;
+    el.classList.add(FLASH_CLASS);
+    setTimeout(() => el.classList.remove(FLASH_CLASS), 1200);
   }
 
   function getScrollParent(el) {
     let p = el?.parentElement;
-    for (let i = 0; i < 20 && p; i++) {
+    for (let i = 0; i < 25 && p; i++) {
       const cs = getComputedStyle(p);
       const oy = cs.overflowY;
-      if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 10) {
-        return p;
-      }
+      if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 10) return p;
       p = p.parentElement;
     }
-    return null;
+    return document.scrollingElement || null;
   }
 
-  function jumpToTurn(turn) {
-    if (!turn) return;
+  function jumpToElement(el) {
+    if (!el) return;
 
     const HEADER_OFFSET = 90;
-    const scroller = getScrollParent(turn);
+    const scroller = getScrollParent(el);
 
-    if (scroller) {
-      const turnRect = turn.getBoundingClientRect();
-      const scrollerRect = scroller.getBoundingClientRect();
-      const targetTop = scroller.scrollTop + (turnRect.top - scrollerRect.top) - HEADER_OFFSET;
-      scroller.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+    if (scroller && scroller !== document.scrollingElement) {
+      const tr = el.getBoundingClientRect();
+      const sr = scroller.getBoundingClientRect();
+      const top = scroller.scrollTop + (tr.top - sr.top) - HEADER_OFFSET;
+      scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     } else {
-      const y = window.scrollY + turn.getBoundingClientRect().top - HEADER_OFFSET;
-      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      const top = window.scrollY + el.getBoundingClientRect().top - HEADER_OFFSET;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }
 
-    flashTurn(turn);
+    flashEl(el);
   }
 
   function jumpToLatest() {
     const targets = getAssistantTargets();
     const last = targets[targets.length - 1];
-    if (last) jumpToTurn(last.turn);
+    if (!last) return;
+
+    setActiveMessageId(last.mid);
+    applyActiveHighlight();
+    jumpToElement(last.turn);
   }
 
-  // -----------------------------
-  // 7) Build list
-  // -----------------------------
-  let lastListKey = "";
+  function flashTurn(el) {
+  // highlight the whole conversation turn container
+  const turn =
+    el.closest?.('[data-testid="conversation-turn"]') ||
+    el.closest?.('[data-message-author-role]') ||
+    el;
+
+  if (!turn) return;
+
+  turn.classList.remove("bbj-rj-flash");
+  void turn.offsetWidth; // reflow to restart animation
+  turn.classList.add("bbj-rj-flash");
+  setTimeout(() => turn.classList.remove("bbj-rj-flash"), 1300);
+}
+
+
+  // --------------------------
+  // Build list
+  // --------------------------
+  let lastKey = "";
+
   function rebuildList(reason = "") {
     ensurePanel();
-    updateThreadState();
 
     const list = document.getElementById(LIST_ID);
     if (!list) return;
@@ -304,18 +339,17 @@
     const filter = (localStorage.getItem(LS_FILTER_KEY) || "").trim().toLowerCase();
     const targets = getAssistantTargets();
 
-    const key = targets.map((t) => t.snippet).join("\n");
-    if (key === lastListKey && reason !== "manual" && reason !== "filter") return;
-    lastListKey = key;
+    const key = targets.map(t => t.mid).join("|");
+    if (key === lastKey && reason !== "manual" && reason !== "filter") return;
+    lastKey = key;
 
     list.innerHTML = "";
 
-    const filtered = filter
-      ? targets.map((t, idx) => ({ ...t, idx }))
-          .filter((x) => (String(x.idx + 1) + " " + x.snippet).toLowerCase().includes(filter))
-      : targets.map((t, idx) => ({ ...t, idx }));
+    const rows = filter
+      ? targets.filter(t => (t.snippet || "").toLowerCase().includes(filter))
+      : targets;
 
-    if (!filtered.length) {
+    if (!rows.length) {
       const empty = document.createElement("div");
       empty.className = MUTED_CLASS;
       empty.textContent = targets.length ? "No matches" : "No assistant responses yet";
@@ -323,32 +357,27 @@
       return;
     }
 
-    for (const itemData of filtered) {
+    rows.forEach((t, i) => {
       const item = document.createElement("div");
       item.className = ITEM_CLASS;
-      item.setAttribute("data-bbj-index", String(itemData.idx));
-      item.textContent = `${itemData.idx + 1}. ${itemData.snippet}`;
-      item.title = "Click to jump";
+      item.setAttribute("data-bbj-mid", t.mid);
+      item.textContent = `${i + 1}. ${t.snippet}`;
       list.appendChild(item);
-    }
+    });
+
+    applyActiveHighlight();
   }
 
-  let listTimer = 0;
-  function scheduleListRebuild(reason) {
-    clearTimeout(listTimer);
-    listTimer = window.setTimeout(() => rebuildList(reason), 250);
+  let timer = 0;
+  function scheduleRebuild(reason) {
+    clearTimeout(timer);
+    timer = window.setTimeout(() => rebuildList(reason), 250);
   }
 
-  // -----------------------------
-  // 8) Observe + URL changes
-  // -----------------------------
+  // --------------------------
+  // Observe conversation changes
+  // --------------------------
   function findConversationRoot() {
-    const firstTurn = $("[data-testid='conversation-turn']");
-    if (firstTurn) return firstTurn.parentElement || $("main") || document.body;
-
-    const role = $("[data-message-author-role]");
-    if (role) return role.parentElement || $("main") || document.body;
-
     return $("main") || document.body;
   }
 
@@ -356,13 +385,8 @@
     const root = findConversationRoot();
     if (!root) return;
 
-    const mo = new MutationObserver(() => {
-      ensureHtmlGateClasses();
-      updateThreadState();
-      scheduleListRebuild("mutation");
-    });
-
-    mo.observe(root, { childList: true, subtree: true });
+    new MutationObserver(() => scheduleRebuild("mutation"))
+      .observe(root, { childList: true, subtree: true });
   }
 
   let lastHref = location.href;
@@ -371,8 +395,7 @@
       if (location.href !== lastHref) {
         lastHref = location.href;
         ensurePanel();
-        updateThreadState();
-        scheduleListRebuild("url-change");
+        scheduleRebuild("url-change");
       }
     }, 600);
   }
@@ -382,21 +405,8 @@
     rebuildList("init");
     observeConversation();
     watchUrlChanges();
-
-    window.addEventListener(
-      "resize",
-      () => {
-        ensurePanel();
-        scheduleListRebuild("resize");
-      },
-      { passive: true }
-    );
-
-    // Keep state correct if welcome -> thread changes
-    setInterval(updateThreadState, 800);
-
-    setTimeout(() => scheduleListRebuild("settle"), 900);
+    setTimeout(() => scheduleRebuild("settle"), 900);
   }
 
-  setTimeout(init, 150);
+  setTimeout(init, 250);
 })();

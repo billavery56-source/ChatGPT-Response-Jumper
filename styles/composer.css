@@ -1,28 +1,11 @@
-/* styles/composer.css
-   Composer section ONLY (the input area)
-   Independent from upper section.
-*/
-
+/* Composer only: same gutters + rail reserve */
 html:has(#bbj-rj-rail) #thread-bottom-container{
   box-sizing: border-box !important;
-
-  /* Equal small left gutter */
   padding-left: var(--bbj-gutter) !important;
-
-  /* Reserve rail on right + same gutter */
-  padding-right: calc(var(--bbj-composer-reserve) + var(--bbj-gutter)) !important;
+  padding-right: calc(var(--bbj-rj-rail-width) + var(--bbj-rj-rail-gap) + var(--bbj-gutter)) !important;
 }
 
-/* IMPORTANT: On the welcome screen, ChatGPT often constrains the composer with inner max-width wrappers.
-   This removes those constraints WITHOUT changing heights/typography. */
-html:has(#bbj-rj-rail) #thread-bottom-container :is(form, [role="form"], .w-full, [class*="w-full"]){
-  max-width: none !important;
-  width: 100% !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Wrap fix (no horizontal scrollbar while typing) */
+/* Keep typing wrap sane */
 html:has(#bbj-rj-rail) #thread-bottom-container :is(textarea,[contenteditable="true"]){
   white-space: pre-wrap !important;
   overflow-wrap: anywhere !important;
