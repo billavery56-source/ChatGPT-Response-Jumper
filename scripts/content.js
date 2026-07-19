@@ -382,11 +382,8 @@ function jumpToAnchor(anchorEl) {
   }
 
   function observeConversation() {
-    const root = findConversationRoot();
-    if (!root) return;
-
-    new MutationObserver(() => scheduleRebuild("mutation"))
-      .observe(root, { childList: true, subtree: true });
+    // Quiet mode: ChatGPT mutates constantly while editing, streaming, and when
+    // DevTools inspects nodes. Rebuilding on every mutation makes the page lag.
   }
 
   let lastHref = location.href;
@@ -397,7 +394,7 @@ function jumpToAnchor(anchorEl) {
         ensurePanel();
         scheduleRebuild("url-change");
       }
-    }, 600);
+    }, 2000);
   }
 
   function init() {
